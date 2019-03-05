@@ -1,6 +1,6 @@
 CC = g++
 CDFLAGS = -Wall -g
-SRC = maze.cpp
+SRC = maze.cpp visual.cpp
 OBJ = $(SRC:%.cpp=%.o)
 EXE = maze.exe
 

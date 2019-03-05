@@ -1,4 +1,4 @@
-#include "visual.h"
+#include "visual.hpp"
 #include <iostream>
 #include <fstream>
 
