@@ -681,7 +681,7 @@ bool read_bool()
   return false; }
 */
 int _x_randomificate()
-{ srandomdev();
+{ srandom(time(NULL));
   return 0; }
 
 const int _x_pointless = _x_randomificate();
