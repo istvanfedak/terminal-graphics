@@ -19,7 +19,7 @@
 using namespace std;
 
 /*
-############################################################################### 
+###############################################################################
 Instructions on how to use:
 - download the file to the current working directory
 - create a makefile file
@@ -46,7 +46,7 @@ wborder(win, left, right, top, bottom, tlc,trc,blc,brc);
 	- allows better border customization (tlc = top left corner)
 attributes:
 attron(); sets an attribute
-attroff(); removes an attribute 
+attroff(); removes an attribute
 
 list of atributes:
 
@@ -92,218 +92,222 @@ KEY_DOWN
 
 */
 
-WINDOW * cw_ = NULL; // current window
-int wantc_ = 2; // want color
-int winc_ = 1; //window color
-bool winb_ = false; //window box
-string whd = "west"; //window heading degrees 
+WINDOW * cw_ = NULL;   // current window
+int wantc_   = 2;      // want color
+int winc_    = 1;      //window color
+bool winb_   = false;  //window box
+string whd   = "west"; //window heading degrees 
 
-namespace color{
+namespace color
+{ const int
 
-const int   black = 0,// COLOR_BLACK
-	      red = 1,// COLOR_RED
-	    green = 2,// COLOR_GREEN
-	   yellow = 3,// COLOR_YELLOW
-	     blue = 4,// COLOR_BLUE
-	  magenta = 5,// COLOR_MAGENTA
-	     cyan = 6,// COLOR_CYAN
-	    white = 7,// COLOR_WHITE
-	      rgb = 8; // unkown
-
+    black = 0, // COLOR_BLACK
+      red = 1, // COLOR_RED
+    green = 2, // COLOR_GREEN
+   yellow = 3, // COLOR_YELLOW
+     blue = 4, // COLOR_BLUE
+  magenta = 5, // COLOR_MAGENTA
+     cyan = 6, // COLOR_CYAN
+    white = 7, // COLOR_WHITE
+     rgb = 8;  // unkown
 }
 
-namespace direction{
-const string      north="north",
-             north_west="north_west",
-                   west="west",
-             south_west="south_west",
-                  south="south",
-             south_east="south_east",
-                   east="east",
-             north_east="north-east",
-                 center="centre";
+namespace direction
+{ const string
+
+       north = "north",
+  north_west = "north_west",
+        west = "west",
+  south_west = "south_west",
+       south = "south",
+  south_east = "south_east",
+        east = "east",
+  north_east = "north-east",
+      center = "centre";
 }
 
-int set_pen_color_int(int r, int g, int b){
-	if(!can_change_color()){
-		if(stdscr!= NULL){
- 			mvwprintw(stdscr,1,1,"Terminal has no RGB support");
-		}
-	}
-	init_color(color::rgb,r,g,b);
-	return color::rgb;
-}
+// sets a pen color to an rgb value
+int set_pen_color_int(int r, int g, int b)
+{ // check if your can change the terminals color
+  if( !can_change_color() )
+    // check if the standard window is NULL
+    if(stdscr != NULL)
+      // print error
+      mvwprintw(stdscr,1,1,"Terminal has no RGB support");
+  // set pen color
+  init_color(color::rgb,r,g,b);
+  return color::rgb; }
 
-int set_pen_color(int foreground, int background){
-	wantc_++; //This allows 256 choices
-	if(wantc_ >=1000){
-		mvwprintw(stdscr,1,1,"Out of colors, learn about color pair indexs in ncurses");
-		return 0;
-	}
-	init_pair(wantc_, foreground, background);
-        wattron(cw_,COLOR_PAIR(wantc_));
-	return wantc_;
-}
+// this function is depreciated and needs to be updated
+// TODO update function
+int set_pen_color(int foreground, int background)
+{ wantc_++; //This allows 256 choices
+  if(wantc_ >=1000)
+  { mvwprintw(stdscr,1,1,"Out of colors, learn about color pair indexs in ncurses");
+    return 0; }
+  init_pair(wantc_, foreground, background);
+  wattron(cw_,COLOR_PAIR(wantc_));
+  return wantc_; }
 
-void set_pen_color(const int index= -1){
-	if(index ==-1)
-                wattron(cw_,COLOR_PAIR(winc_));
-	else wattron(cw_, COLOR_PAIR(index));
-}
+// set a pen color to a created color pair
+void set_pen_color(const int index= -1)
+{ if(index ==-1)
+    wattron(cw_,COLOR_PAIR(winc_));
+  else
+    wattron(cw_, COLOR_PAIR(index)); }
 
-void unset_pen_color(const int index){
-	wattroff(cw_, COLOR_PAIR(index));
-}
+// free a pen color
+void unset_pen_color(const int index)
+{ wattroff(cw_, COLOR_PAIR(index)); }
 
-void set_window_color(int foreground, int background){
-        init_pair(winc_, foreground, background);
-	wrefresh(cw_);
-}
+// set window color
+void set_window_color(int foreground, int background)
+{ init_pair(winc_, foreground, background);
+  wrefresh(cw_); }
 
-void make_window(bool b = true){
-	winb_ = b;
-	if(stdscr == NULL) initscr();
-	cbreak();
-	if(cw_ != NULL) delwin(cw_);
-	cw_ = stdscr;
-	if(!has_colors()) mvwprintw(stdscr,1,1,"Terminal has no Colors");
-        else start_color();
-	if(b){
-		box(cw_,0,0); // makes a box around window
-	}
-	init_pair(winc_,COLOR_WHITE,COLOR_BLACK);
-        wbkgd(cw_,COLOR_PAIR(winc_));
-	wrefresh(cw_);
-	curs_set(0);
-}
+void make_window(int drawBox = 1)
+{ winb_ = b;
+  if(stdscr == NULL)
+    initscr();
+    cbreak();
+  if(cw_ != NULL) delwin(cw_);
+    cw_ = stdscr;
+  if(!has_colors())
+    mvwprintw(stdscr,1,1,"Terminal has no Colors");
+  else
+    start_color();
+  if(dawBox)
+    box(cw_,0,0); // makes a box around window
 
-void make_window(int width, int height, int x = -7777, int y = -7777, bool b = true){
-	winb_ = true;
-	//initializes the screen
-	// sets up memory and clears the screen
-	if(stdscr == NULL) initscr();
-	// allow to exit program
-	cbreak();
-	// getting terminal size
-	int xb,yb,xm,ym;
-        getbegyx(stdscr,yb,xb);
-        getmaxyx(stdscr,ym,xm);
-	// makes a window
-	if(cw_ != NULL) delwin(cw_);
-	if(x==-7777||y==-7777)
-		cw_ = newwin(height,width,(ym-yb)/2-height/2,(xm-xb)/2-width/2);
-	else cw_ = newwin(height,width,y,x);
+  init_pair(winc_,COLOR_WHITE,COLOR_BLACK);
+  wbkgd(cw_,COLOR_PAIR(winc_));
+  wrefresh(cw_);
+  curs_set(0); }
 
-        if(!has_colors()) mvwprintw(stdscr,1,1,"Terminal has no Colors");
-        else start_color();
-	if(b){
-		box(cw_,0,0); // makes a box around window
-	}
-	init_pair(winc_,COLOR_WHITE,COLOR_BLACK);
-        wbkgd(cw_,COLOR_PAIR(winc_));	
-	wrefresh(cw_); // refreshes the window
-	curs_set(0);
-}
+void make_window(int width, int height, int x = -7777, int y = -7777, int drawBox = 1)
+{ winb_ = true;
+  //initializes the screen
+  // sets up memory and clears the screen
+  if(stdscr == NULL)
+    initscr();
+  // allow to exit program
+  cbreak();
+  // getting terminal size
+  int xb,yb,xm,ym;
+  getbegyx(stdscr,yb,xb);
+  getmaxyx(stdscr,ym,xm);
 
-void destroy_window(){
-	// deallocates memory and ends ncureses
-	if(cw_ !=NULL) delwin(cw_);
-	endwin();
-}
+  // makes a window
+  if(cw_ != NULL)
+    delwin(cw_);
+  if(x==-7777||y==-7777)
+    cw_ = newwin(height,width,(ym-yb)/2-height/2,(xm-xb)/2-width/2);
+  else
+    cw_ = newwin(height,width,y,x);
 
-void refresh_window(){
-	// refreshes the screen to match whats in memory
-	if(cw_ == stdscr) refresh();
-	else wrefresh(cw_);
-}
+  if(!has_colors())
+    mvwprintw(stdscr,1,1,"Terminal has no Colors");
+  else start_color();
+  if(drawBox)
+    box(cw_,0,0); // makes a box around window
 
-void set_window_position(int x, int y){
-	mvwin(cw_, y,x);
-	refresh();
-	wrefresh(cw_);
-}
+  init_pair(winc_,COLOR_WHITE,COLOR_BLACK);
+  wbkgd(cw_,COLOR_PAIR(winc_));
+  wrefresh(cw_); // refreshes the window
+  curs_set(0); }
 
-void set_window_size(int w, int h){
-	wresize(cw_,h,w);
-	if(winb_){
-		//for some reason color wont change
-		box(cw_,0,0);
-	}
-	refresh();
-        wrefresh(cw_);
-}
+// delete window
+void destroy_window()
+{ // deallocates memory and ends ncureses
+  if(cw_ !=NULL)
+    delwin(cw_);
+    endwin(); }
 
-void clear_window(){
-	// clear(); same as library.h
-	wclear(cw_);
-}
+// refresh window
+void refresh_window()
+{ // refreshes the screen to match whats in memory
+  if(cw_ == stdscr)
+    refresh();
+  else
+    wrefresh(cw_); }
 
-void get_position(int &x, int &y){
-        getyx(cw_,y,x);
-}
+void set_window_position(int x, int y)
+{ mvwin(cw_, y,x);
+  refresh();
+  wrefresh(cw_); }
 
-int get_x_position(){
-        int x,y;
-        getyx(cw_,y,x);
-        return x;
-}
+void set_window_size(int w, int h)
+{ wresize(cw_,h,w);
+  if(winb_)
+    //for some reason color wont change
+    box(cw_,0,0);
 
-int get_y_position(){
-        int x,y;
-        getyx(cw_,y,x);
-        return y;
-}
+  // TODO optimize refresh
+  refresh();
+  wrefresh(cw_); }
 
-int get_window_width(){
-        int xb,yb,xm,ym;
-        getbegyx(cw_,yb,xb);
-        getmaxyx(cw_,ym,xm);
-        return xm-xb;
-}
+// clear contents of window
+void clear_window()
+{ // clear(); same as library.h
+  wclear(cw_); }
 
-int get_window_height(){
-        int xb,yb,xm,ym;
-        getbegyx(cw_,yb,xb);
-        getmaxyx(cw_,ym,xm);
-        return ym-yb;
-}
+// get the x & y position of the window
+void get_position(int & x, int & y)
+{ getyx(cw_,y,x); }
 
-void get_window_size(int &w, int &h){
-        int xb,yb,xm,ym;
-        getbegyx(cw_,yb,xb);
-        getmaxyx(cw_,ym,xm);
-        w = xm-xb;
-        h = ym-yb;
-}
+int get_x_position()
+{ int x, y;
+  getyx(cw_, y, x);
+  return x; }
 
-int get_screen_width(){
-        int xb,yb,xm,ym;
-        getbegyx(stdscr,yb,xb);
-        getmaxyx(stdscr,ym,xm);
-        return xm-xb;
-}
+int get_y_position()
+{ int x,y;
+  getyx(cw_,y,x);
+  return y; }
 
-int get_screen_height(){
-        int xb,yb,xm,ym;
-        getbegyx(stdscr,yb,xb);
-        getmaxyx(stdscr,ym,xm);
-        return ym-yb;
-}
+int get_window_width()
+{ int xb,yb,xm,ym;
+  getbegyx(cw_,yb,xb);
+  getmaxyx(cw_,ym,xm);
+  return xm-xb; }
 
-void get_screen_size(int &w, int &h){
-        int xb,yb,xm,ym;
-        getbegyx(stdscr,yb,xb);
-        getmaxyx(stdscr,ym,xm);
-        w = xm-xb;
-        h = ym-yb;
-}
+int get_window_height()
+{ int xb,yb,xm,ym;
+  getbegyx(cw_,yb,xb);
+  getmaxyx(cw_,ym,xm);
+  return ym-yb; }
 
-void move_to(int x, int y){
-	wmove(cw_,y,x);
-}
-void wait(double d = -1){
-        wtimeout(cw_,(int)(d*1000));
-}
+void get_window_size(int &w, int &h)
+{ int xb,yb,xm,ym;
+  getbegyx(cw_,yb,xb);
+  getmaxyx(cw_,ym,xm);
+  w = xm-xb;
+  h = ym-yb; }
+
+int get_screen_width()
+{ int xb,yb,xm,ym;
+  getbegyx(stdscr,yb,xb);
+  getmaxyx(stdscr,ym,xm);
+  return xm-xb; }
+
+int get_screen_height()
+{ int xb,yb,xm,ym;
+  getbegyx(stdscr,yb,xb);
+  getmaxyx(stdscr,ym,xm);
+  return ym-yb; }
+
+void get_screen_size(int &w, int &h)
+{ int xb,yb,xm,ym;
+  getbegyx(stdscr,yb,xb);
+  getmaxyx(stdscr,ym,xm);
+  w = xm-xb;
+  h = ym-yb; }
+
+void move_to(int x, int y)
+{ wmove(cw_,y,x); }
+
+void wait(double d = -1)
+{ wtimeout(cw_,(int)(d*1000)); }
 
 int wait_for_key_typed(double d =-1){
 	noecho();
